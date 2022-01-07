@@ -36,3 +36,8 @@ OPTIONS:
 │   D  ┆          3          ┆       114       │
 └──────┴─────────────────────┴─────────────────┘
 ```
+
+### Notes 
+
+- Async io with tokio::fs::File performed significantly worse than std
+- Map-Fold-Reduce pattern performed slightly better than what's currently in benches/my_benchmark but still took more than twice as long as the single-thread blocking-io implementation
