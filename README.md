@@ -1,6 +1,6 @@
 # Log Analyzer
 
-Counts the number of objects of each type that are in the log, and the total byte size of all messages for each type in a log of JSON objects
+Takes a path to a newline-delimited JSON log file and outputs the number of objects of each type that are in the log along with their cumulative byte size.
 
 ```
 USAGE:
@@ -10,7 +10,7 @@ ARGS:
     <PATH_IN>    Path to input file
 
 OPTIONS:
-    -h, --help             Print help information
+    -h, --help   Print help information
 ```
 
 ### Example Input File:
@@ -27,17 +27,13 @@ OPTIONS:
 ┌──────┬─────────────────────┬─────────────────┐
 │ Type ┆ Number of Instances ┆ Total Byte Size │
 ╞══════╪═════════════════════╪═════════════════╡
-│   B  ┆          3          ┆       114       │
+│   B  ┆          2          ┆        77       │
 ├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│   C  ┆          3          ┆       114       │
-├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│   A  ┆          3          ┆       114       │
-├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│   D  ┆          3          ┆       114       │
+│   A  ┆          1          ┆        27       │
 └──────┴─────────────────────┴─────────────────┘
 ```
 
-### Notes 
+### Opportunities
 
-- Async io with tokio::fs::File performed significantly worse than std
-- Map-Fold-Reduce pattern performed slightly better than what's currently in benches/my_benchmark but still took more than twice as long as the single-thread blocking-io implementation
+- Parallelism across CPU cores, where one thread is used to locate newline delimiters, allocate memory, and schedule parsing jobs, while the others load-balance the parsing of the JSON objects between them with work-stealing.
+- Parallelism within CPU cores where slices of bytes are operated on at a time instead of individually, e.g. pikkr uses AVX-2, which can perform up to 16 operations at a time, for extracting known-key fields from JSON objects, and nom_locate could be used to locate the newline delimiters.
